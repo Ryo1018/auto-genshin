@@ -4,13 +4,17 @@ import tkinter.ttk as ttk
 from tkinter import filedialog
 import getpass
 
-import controller
+import numpy as np
+from numpy import save
+
+# import controller
 
 global isRunButton, openFilePath, saveDir
 isRunButton = False
 
 def open_file_command():
     usrPics = r'\Users\{}\Pictures'.format(getpass.getuser())
+    global file_path
     file_path = filedialog.askopenfilename(
         filetypes=[('image file', '*.png;*.jpg;*.jpeg')],
         initialdir=usrPics,
@@ -18,21 +22,11 @@ def open_file_command():
     openFilePath = str(file_path)
     image_choice_label_text.set(openFilePath)
 
-    # UPDATE PATH ENTRY
-    # image_choice_entry.configue(state='normal')
-    # image_choice_entry.insert(tk.END, file_path)
-    # image_choice_entry.configue(state='readonly')
-
-    # if not (image_choice_entry == "" or image_choice_entry == 0):
-    #     isRunButton = True
-
     if not openFilePath == '':
         run_button['state'] = tk.NORMAL
+        image_savedir_label_text.set('C:/Users/{}/Pictures'.format(getpass.getuser()))
     elif openFilePath == '':
         image_choice_label_text.set('(Required)')
-
-    # if isRunButton == True:
-    #     run_button['state'] = tk.NORMAL
 
 
 def save_directory_command():
@@ -41,11 +35,8 @@ def save_directory_command():
         initialdir=usrPics,
     )
     saveDir = str(dir_path)
-
-    # UPDATE PATH ENTRY
-    # image_savedir_button_entry.configue(state='normal')
-    # image_savedir_button_entry.insert(tk.END, saveDir)
-    # image_savedir_button_entry.configue(state='readonly')
+    if saveDir == '' or saveDir == 'PY_VAR1':
+        saveDir = str(usrPics)
 
     image_savedir_label_text.set(saveDir)
 
@@ -53,7 +44,7 @@ def get_saveDir():
     return saveDir
 
 # def get_openFile():
-#     return open_file_command.file_path
+#     return openFilePath
 
 def set_processTime(time):
     processTime.set(time)
@@ -75,10 +66,6 @@ def view():
         height=1,
         )
     image_choice_button.pack()
-    # ENTRY
-    # global image_choice_entry
-    # image_choice_entry = tk.Entry(frame, width=40, state='readonly')
-    # image_choice_entry.pack()
 
     global image_choice_label_text
     image_choice_label_text = tk.StringVar(value='(Required)')
@@ -96,10 +83,6 @@ def view():
         height=1,
         )
     image_savedir_button.pack()
-    # ENTRY
-    # global image_savedir_button_entry
-    # image_savedir_button_entry = tk.Entry(frame, width=40, state='readonly')
-    # image_savedir_button_entry.pack()
 
     global image_savedir_label_text
     image_savedir_label_text = tk.StringVar(value="")
@@ -117,17 +100,45 @@ def view():
     # RUN
     global run_button
     run_button = tk.Button(
-        frame, text="RUN", command=controller.run, state=tk.DISABLED
+        frame, text="RUN", command=run, state=tk.DISABLED
     )
     run_button.pack()
-    
-
-    # if isRunButton == False:
-    #     run_button.state(['disabled'])
-    # else:
-    #     run_button.state(['enabled'])
 
     root.mainloop()
+
+
+
+import cv2
+import time
+def run():
+    startTime = time.time()
+
+
+    before_file = file_path
+    # savePath = saveDir + ('/Genshin.png')
+    savePath = image_savedir_label_text.get()
+    print('before_file is',before_file,
+    'savePath is', savePath)
+
+    img1 = cv2.imread(str(before_file))
+    print(img1.shape)
+    img_genshin = cv2.imread('./pic/genshin.png')
+
+    # GET IMAGE RESOLUTION
+    height, width = img1.shape[:2]
+    genHeight, genWidth = img_genshin.shape[:2]
+    resize_img_genshin = cv2.resize(img_genshin, dsize=None, fx=width/7, fy=width/7)
+
+    # IMAGE PLACE
+    img1[:height,:width] = resize_img_genshin
+
+    # OUTPUT
+    cv2.imwrite(savePath, resize_img_genshin)
+
+
+    endTime = time.time()
+    endTime = endTime - startTime
+    set_processTime()
 
 if __name__ == '__main__':
     view()
