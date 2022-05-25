@@ -106,39 +106,74 @@ def view():
 
     root.mainloop()
 
-
-
-import cv2
+from PIL import Image, ImageDraw, ImageFilter
 import time
 def run():
     startTime = time.time()
 
-
-    before_file = file_path
-    # savePath = saveDir + ('/Genshin.png')
     savePath = image_savedir_label_text.get()
-    print('before_file is',before_file,
-    'savePath is', savePath)
+    beforeFile = file_path
+    savePath = savePath + '/Genshin.png'
 
-    img1 = cv2.imread(str(before_file))
-    print(img1.shape)
-    img_genshin = cv2.imread('./pic/genshin.png')
+    img1 = Image.open(beforeFile)
+    img_genshin = Image.open('./pic/genshin.png').convert('RGBA')
 
-    # GET IMAGE RESOLUTION
-    height, width = img1.shape[:2]
-    genHeight, genWidth = img_genshin.shape[:2]
-    resize_img_genshin = cv2.resize(img_genshin, dsize=None, fx=width/7, fy=width/7)
+    w, h = img1.size
+    gw, gh = img_genshin.size
 
-    # IMAGE PLACE
-    img1[:height,:width] = resize_img_genshin
+    resize_genshin = img_genshin.resize((int(w/7), int(w/7)))
+    rw, rh = resize_genshin.size
 
-    # OUTPUT
-    cv2.imwrite(savePath, resize_img_genshin)
+    # DEBUG
+    print(f'beforeFile is {beforeFile}, savePath is {savePath}')
+    print(f'img1 is {img1}')
+    print(f'img_genshin is {img_genshin}')
+    print(f'resize_genshin is {resize_genshin}')
 
+    img1.paste(resize_genshin, (w-rw, h-rh), resize_genshin)
+    img1.save(savePath)
 
     endTime = time.time()
     endTime = endTime - startTime
-    set_processTime()
+    set_processTime(endTime)
+
+
+
+# import cv2
+# import time
+# def run():
+#     startTime = time.time()
+
+
+#     before_file = file_path
+#     # savePath = saveDir + ('/Genshin.png')
+#     savePath = image_savedir_label_text.get()
+#     print('before_file is',before_file,
+#     'savePath is', savePath)
+
+#     savePath = savePath, '/Genshin.png'
+
+#     img1 = cv2.imread(str(before_file))
+#     print(img1.shape)
+#     img_genshin = cv2.imread('./pic/genshin.png')
+
+#     # GET IMAGE RESOLUTION
+#     height, width = img1.shape[:2]
+#     genHeight, genWidth = img_genshin.shape[:2]
+
+#     resize_img_genshin = cv2.resize(img_genshin, dsize=None, fx=(int(width/7)), fy = (int(width/7)))
+#     reGenHeight, reGenWidth = resize_img_genshin[:2]
+
+#     # IMAGE PLACE
+#     img1[:height, :width] = resize_img_genshin
+
+#     # OUTPUT
+#     cv2.imwrite(str(savePath, '/Genshin.png'), resize_img_genshin)
+
+
+#     endTime = time.time()
+#     endTime = endTime - startTime
+#     set_processTime(endTime)
 
 if __name__ == '__main__':
     view()
