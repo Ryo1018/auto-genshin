@@ -3,14 +3,15 @@ from tkinter.font import NORMAL
 import tkinter.ttk as ttk
 from tkinter import filedialog
 import getpass
-
-import numpy as np
-from numpy import save
+# import numpy as np
+# from numpy import save
+from decimal import Decimal, ROUND_HALF_UP, ROUND_HALF_EVEN
+import os
+import webbrowser
 
 # import controller
 
 global isRunButton, openFilePath, saveDir
-isRunButton = False
 
 def open_file_command():
     usrPics = r'\Users\{}\Pictures'.format(getpass.getuser())
@@ -47,12 +48,21 @@ def get_saveDir():
 #     return openFilePath
 
 def set_processTime(time):
-    processTime.set(time)
+    editTime = (Decimal(str(time)).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP))
+    processTime.set('ProcessTime : ' + str(editTime) + ' sec')
+
+def link_click(url):
+    webbrowser.open_new(url)
 
 def view():
     root = tk.Tk()
-    root.geometry('400x175')
-    root.title('genshin bot')
+    root.geometry('400x225')
+    root.title('autoGenshin')
+
+    cwd = os.getcwd()
+    # iconfile = r'.\pic\icon.ico'
+    iconfile = cwd + '\\pic\\icon.ico'
+    root.iconbitmap(default=iconfile)
 
     frame = ttk.Frame(root)
     frame.pack(fill = tk.BOTH, padx=20, pady=10)
@@ -89,6 +99,12 @@ def view():
     image_savedir_label = tk.Label(frame, textvariable=image_savedir_label_text)
     image_savedir_label.pack()
 
+    global extension_switch_value
+    extension_switch_value = tk.IntVar()
+    extension_switch_jpg = tk.Radiobutton(frame, text='JPG', variable=extension_switch_value, value=0)
+    extension_switch_png = tk.Radiobutton(frame, text='PNG', variable=extension_switch_value, value=1)
+    extension_switch_jpg.pack()
+    extension_switch_png.pack()
 
     # PROCESS TIME
     global processTime
@@ -104,6 +120,11 @@ def view():
     )
     run_button.pack()
 
+    other_font = tk.font.Font(size=10, underline=True,)
+    other = tk.Label(frame, text="Building by Ryo1018", fg='blue', cursor='hand2', font=other_font)
+    other.pack()
+    other.bind('<Button-1>', lambda e:link_click('https://github.com/Ryo1018'))
+
     root.mainloop()
 
 from PIL import Image, ImageDraw, ImageFilter
@@ -112,8 +133,9 @@ def run():
     startTime = time.time()
 
     savePath = image_savedir_label_text.get()
+    print(savePath)
+
     beforeFile = file_path
-    savePath = savePath + '/Genshin.png'
 
     img1 = Image.open(beforeFile)
     img_genshin = Image.open('./pic/genshin.png').convert('RGBA')
@@ -124,14 +146,20 @@ def run():
     resize_genshin = img_genshin.resize((int(w/7), int(w/7)))
     rw, rh = resize_genshin.size
 
-    # DEBUG
-    print(f'beforeFile is {beforeFile}, savePath is {savePath}')
-    print(f'img1 is {img1}')
-    print(f'img_genshin is {img_genshin}')
-    print(f'resize_genshin is {resize_genshin}')
+    # # DEBUG
+    # print(f'beforeFile is {beforeFile}, savePath is {savePath}')
+    # print(f'img1 is {img1}')
+    # print(f'img_genshin is {img_genshin}')
+    # print(f'resize_genshin is {resize_genshin}')
 
     img1.paste(resize_genshin, (w-rw, h-rh), resize_genshin)
-    img1.save(savePath)
+
+    if extension_switch_value.get() == 0:
+        img1.save(savePath + '/Genshin.jpg', 'JPEG')
+    elif extension_switch_value.get() == 1:
+        img1.save(savePath + '/Genshin.png', 'PNG')
+    else:
+        raise FileExistsError('shit')
 
     endTime = time.time()
     endTime = endTime - startTime
